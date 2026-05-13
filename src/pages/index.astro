@@ -1,0 +1,594 @@
+---
+export const prerender = false; // server-rendered so preview mode works
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Nav from "../components/Nav.astro";
+import WorkCard from "../components/WorkCard.astro";
+import WorkModal from "../components/WorkModal.astro";
+import {
+  getHomepage,
+  getAbout,
+  getAllWorks,
+  getCategories,
+  getServices,
+  getFAQs,
+  getSiteSettings,
+} from "../lib/sanity";
+
+const isPreview = Astro.url.searchParams.get("preview") === "true";
+
+const homepage = await getHomepage(isPreview);
+const about = await getAbout(isPreview);
+const works = await getAllWorks(isPreview);
+const categories = await getCategories(isPreview);
+const services = await getServices(isPreview);
+const faqs = await getFAQs(isPreview);
+const site = await getSiteSettings(isPreview);
+
+const bioParagraphs = about.bio.split("\n\n");
+const year = new Date().getFullYear();
+
+const filters: { value: string; label: string }[] = [
+  { value: "all", label: "全部" },
+  ...categories.map((c) => ({ value: c.slug, label: c.name })),
+];
+
+const formatPrice = (n: number) =>
+  new Intl.NumberFormat("zh-TW").format(n);
+
+const tapeItems = works.slice(0, 8).map((w) => w.title);
+---
+
+<BaseLayout title={site.siteName} description={homepage.tagline}>
+  <Nav />
+  <div id="top"></div>
+
+  {/* ============ HERO ============ */}
+  <section class="relative pt-24 pb-14 md:pt-32 md:pb-20">
+    <div class="container-wide">
+      <div class="grid gap-8 md:grid-cols-12 md:gap-8 md:items-end">
+        <div class="md:col-span-8 lg:col-span-9">
+          <p class="eyebrow reveal flex items-center gap-3">
+            <span class="accent-serif normal-case text-base text-ink not-italic">{year}</span>
+            <span class="inline-block h-px w-6 bg-ink-faint"></span>
+            <span>Editor · Storyteller</span>
+          </p>
+
+          <h1 class="display-1 mt-6 reveal reveal-delay-1 zh">
+            {homepage.tagline}
+          </h1>
+
+          <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 reveal reveal-delay-2">
+            <a
+              href="#works"
+              class="group inline-flex items-center gap-2 border border-ink rounded-full pl-5 pr-3 py-2 text-sm zh transition-all hover:bg-ink hover:text-paper"
+            >
+              <span>瀏覽作品</span>
+              <span
+                class="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-paper transition-transform group-hover:translate-y-0.5 group-hover:bg-paper group-hover:text-ink"
+              >↓</span>
+            </a>
+            <a
+              href="#contact"
+              class="text-sm text-ink-soft zh link-grow"
+            >
+              合作邀約
+            </a>
+          </div>
+        </div>
+
+        <div class="md:col-span-4 lg:col-span-3 reveal reveal-delay-2">
+          <p class="zh leading-relaxed text-sm text-ink-soft md:text-base">
+            {homepage.intro}
+          </p>
+        </div>
+      </div>
+
+      {/* Marquee tape */}
+      <div
+        class="mt-14 md:mt-20 overflow-hidden border-y border-line py-3 md:py-4 reveal reveal-delay-3"
+      >
+        <div class="marquee-track">
+          {
+            [...tapeItems, ...tapeItems, ...tapeItems].map((title) => (
+              <div class="flex items-center gap-5 px-5 md:gap-6 md:px-6">
+                <span class="accent-serif text-xl text-ink-soft md:text-2xl">
+                  {title}
+                </span>
+                <span class="text-accent text-lg">✦</span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ============ WORKS ============ */}
+  <section id="works" class="relative py-14 md:py-24 scroll-mt-16">
+    <div class="container-wide">
+      <div class="mb-8 flex flex-col gap-5 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-8">
+        <div class="reveal">
+          <p class="eyebrow">
+            <span class="accent-serif normal-case text-sm text-ink not-italic">01</span>
+            &nbsp;—&nbsp;Selected Works
+          </p>
+          <h2 class="display-2 mt-4 zh">作品集</h2>
+        </div>
+
+        <p class="max-w-md zh text-sm leading-relaxed text-ink-soft reveal reveal-delay-1 md:text-base">
+          點擊作品可在站內播放完整影片。共 <span class="accent-serif text-base text-ink">{String(works.length).padStart(2, "0")}</span> 件直式短影音作品。
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div class="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2.5 reveal md:mb-8 md:gap-x-6">
+        <span class="eyebrow shrink-0">Filter</span>
+        {
+          filters.map((f) => (
+            <button
+              type="button"
+              data-filter={f.value}
+              class:list={[
+                "filter-btn zh text-sm transition-colors",
+                "text-ink-faint hover:text-ink",
+                f.value === "all" && "is-active",
+              ]}
+            >
+              {f.label}
+            </button>
+          ))
+        }
+      </div>
+
+      {/* Vertical grid */}
+      <div
+        id="works-grid"
+        class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:gap-3.5 lg:grid-cols-4 lg:gap-4"
+      >
+        {
+          works.map((work, i) => (
+            <div
+              data-category={work.category?.slug}
+              class="work-item reveal"
+              style={`transition-delay: ${(i % 4) * 0.05}s`}
+            >
+              <WorkCard work={work} index={i} />
+            </div>
+          ))
+        }
+      </div>
+
+      <p id="empty-state" class="hidden py-20 text-center text-ink-muted zh">
+        這個分類目前沒有作品。
+      </p>
+    </div>
+  </section>
+
+  {/* ============ ABOUT ============ */}
+  <section id="about" class="relative bg-paper-soft py-16 md:py-24 scroll-mt-16">
+    <div class="container-wide">
+      <div class="grid gap-10 md:grid-cols-12 md:gap-8 lg:gap-12">
+        <div class="md:col-span-5 reveal">
+          <p class="eyebrow">
+            <span class="accent-serif normal-case text-sm text-ink not-italic">02</span>
+            &nbsp;—&nbsp;About
+          </p>
+          <h2 class="display-2 mt-4 zh">關於我</h2>
+          {
+            about.headshot && (
+              <img
+                src={about.headshot}
+                alt="個人照"
+                class="mt-8 w-full max-w-xs grayscale"
+              />
+            )
+          }
+        </div>
+
+        <div class="md:col-span-7 lg:col-span-6 lg:col-start-7 reveal reveal-delay-1">
+          <div class="space-y-5 zh text-base leading-loose md:text-[17px]">
+            {bioParagraphs.map((p) => <p>{p}</p>)}
+          </div>
+
+          {
+            about.experience && about.experience.length > 0 && (
+              <div class="mt-10 md:mt-12">
+                <p class="eyebrow">Experience</p>
+                <dl class="mt-5 divide-y divide-line/60">
+                  {about.experience.map((item) => (
+                    <div class="flex gap-5 py-4 md:gap-8">
+                      <dt class="accent-serif w-24 shrink-0 text-sm text-ink-muted md:w-28 md:text-base">
+                        {item.year}
+                      </dt>
+                      <dd class="zh text-sm leading-relaxed md:text-base">
+                        {item.description}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )
+          }
+        </div>
+      </div>
+
+      {
+        about.brands && about.brands.length > 0 && (
+          <div class="mt-16 md:mt-20 reveal">
+            <p class="eyebrow">— Collaborations</p>
+            <div class="mt-6 grid grid-cols-3 gap-x-6 gap-y-6 md:mt-8 md:grid-cols-6">
+              {about.brands.map((brand) => (
+                <div class="flex h-12 items-center md:h-14">
+                  {brand.logo ? (
+                    <img
+                      src={brand.logo}
+                      alt={brand.name}
+                      class="max-h-9 max-w-full opacity-60 grayscale transition-opacity hover:opacity-100 md:max-h-10"
+                    />
+                  ) : (
+                    <span class="zh text-sm text-ink-muted md:text-base">
+                      {brand.name}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  {/* ============ SERVICES ============ */}
+  <section id="services" class="relative py-16 md:py-24 scroll-mt-16">
+    <div class="container-wide">
+      <div class="mb-10 md:mb-14 reveal">
+        <p class="eyebrow">
+          <span class="accent-serif normal-case text-sm text-ink not-italic">03</span>
+          &nbsp;—&nbsp;Services
+        </p>
+        <h2 class="display-2 mt-4 zh max-w-3xl">服務與報價</h2>
+        <p class="mt-5 max-w-xl zh text-sm leading-relaxed text-ink-soft md:text-base">
+          以下方案為起價參考，實際費用依素材量、修改次數與時程調整。
+          需求不在這些方案內也歡迎直接聯繫討論。
+        </p>
+      </div>
+
+      <div class="grid gap-px bg-line sm:grid-cols-2 md:grid-cols-3">
+        {
+          services.map((service, i) => (
+            <article class="flex flex-col bg-paper p-6 md:p-8 reveal">
+              <p class="accent-serif text-sm text-ink-faint">
+                {String(i + 1).padStart(2, "0")}
+              </p>
+              <h3 class="zh mt-2 text-xl font-medium md:text-2xl">
+                {service.name}
+              </h3>
+              {service.tagline && (
+                <p class="mt-1.5 text-xs text-ink-muted md:text-sm">
+                  {service.tagline}
+                </p>
+              )}
+
+              <div class="mt-8">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-xs text-ink-muted">NT$</span>
+                  <span class="accent-serif text-4xl text-ink not-italic md:text-[42px]" style="font-style: normal;">
+                    {formatPrice(service.priceFrom)}
+                  </span>
+                </div>
+                <p class="mt-1.5 text-xs text-ink-muted">
+                  {service.priceUnit} · 交期 {service.deliveryTime}
+                </p>
+              </div>
+
+              <ul class="mt-6 flex-1 space-y-2.5 border-t border-line pt-5 text-sm leading-relaxed">
+                {service.includes.map((item) => (
+                  <li class="flex gap-2.5">
+                    <span class="text-accent mt-0.5 shrink-0">＋</span>
+                    <span class="zh">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href="#contact"
+                class="mt-6 inline-flex items-center gap-2 zh text-sm text-ink self-start link-grow"
+              >
+                <span>諮詢此方案</span>
+                <span>→</span>
+              </a>
+            </article>
+          ))
+        }
+      </div>
+
+      {/* FAQ */}
+      {
+        faqs.length > 0 && (
+          <div class="mt-16 md:mt-24 reveal">
+            <div class="grid gap-8 md:grid-cols-12 md:gap-10">
+              <div class="md:col-span-4">
+                <p class="eyebrow">FAQ</p>
+                <h3 class="display-3 mt-3 zh">常見問題</h3>
+              </div>
+              <div class="md:col-span-8">
+                {faqs.map((faq) => (
+                  <details class="group border-b border-line py-4">
+                    <summary class="flex cursor-pointer items-center justify-between gap-5 list-none">
+                      <h4 class="zh text-base font-medium md:text-lg">
+                        {faq.question}
+                      </h4>
+                      <span class="accent-serif text-xl text-ink-muted transition-transform group-open:rotate-45">
+                        +
+                      </span>
+                    </summary>
+                    <p class="mt-3 text-sm leading-loose text-ink-soft zh md:text-base">
+                      {faq.answer}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  {/* ============ CONTACT ============ */}
+  <section id="contact" class="relative bg-ink py-16 md:py-24 scroll-mt-16 text-paper">
+    <div class="container-wide">
+      <div class="mb-10 md:mb-16 reveal">
+        <p class="eyebrow text-paper/60">
+          <span class="accent-serif normal-case text-sm text-paper not-italic">04</span>
+          &nbsp;—&nbsp;Get in touch
+        </p>
+        <h2 class="display-2 mt-4 zh text-paper max-w-3xl">聊聊你的專案</h2>
+      </div>
+
+      <div class="grid gap-10 md:grid-cols-12 md:gap-10">
+        <form
+          id="contact-form"
+          method="POST"
+          action="/api/contact"
+          class="md:col-span-7 space-y-6 reveal md:space-y-8"
+        >
+          <div class="grid gap-6 sm:grid-cols-2 md:gap-8">
+            <label class="block">
+              <span class="eyebrow text-paper/60">Name</span>
+              <input
+                type="text"
+                name="name"
+                required
+                class="mt-2 w-full border-b border-paper/30 bg-transparent pb-2 text-base text-paper outline-none transition-colors focus:border-paper md:mt-3"
+              />
+            </label>
+            <label class="block">
+              <span class="eyebrow text-paper/60">Email</span>
+              <input
+                type="email"
+                name="email"
+                required
+                class="mt-2 w-full border-b border-paper/30 bg-transparent pb-2 text-base text-paper outline-none transition-colors focus:border-paper md:mt-3"
+              />
+            </label>
+          </div>
+
+          <div class="grid gap-6 sm:grid-cols-2 md:gap-8">
+            <label class="block">
+              <span class="eyebrow text-paper/60">Project type</span>
+              <select
+                name="projectType"
+                class="mt-2 w-full border-b border-paper/30 bg-transparent pb-2 text-base text-paper outline-none focus:border-paper md:mt-3"
+              >
+                <option value="" class="bg-ink">請選擇</option>
+                <option class="bg-ink">單支短影音</option>
+                <option class="bg-ink">系列短片</option>
+                <option class="bg-ink">長期合作</option>
+                <option class="bg-ink">音樂錄影帶</option>
+                <option class="bg-ink">紀錄片 / 訪談</option>
+                <option class="bg-ink">活動側拍</option>
+                <option class="bg-ink">其他</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="eyebrow text-paper/60">Budget (NTD)</span>
+              <select
+                name="budget"
+                class="mt-2 w-full border-b border-paper/30 bg-transparent pb-2 text-base text-paper outline-none focus:border-paper md:mt-3"
+              >
+                <option value="" class="bg-ink">請選擇</option>
+                <option class="bg-ink">5,000 以下</option>
+                <option class="bg-ink">5,000 - 15,000</option>
+                <option class="bg-ink">15,000 - 50,000</option>
+                <option class="bg-ink">50,000 - 100,000</option>
+                <option class="bg-ink">100,000 以上</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="block">
+            <span class="eyebrow text-paper/60">Timeline</span>
+            <input
+              type="text"
+              name="timeline"
+              placeholder="例如：六月底前、彈性"
+              class="mt-2 w-full border-b border-paper/30 bg-transparent pb-2 text-base text-paper placeholder-paper/30 outline-none focus:border-paper md:mt-3"
+            />
+          </label>
+
+          <label class="block">
+            <span class="eyebrow text-paper/60">Message</span>
+            <textarea
+              name="message"
+              rows="5"
+              required
+              placeholder="請描述專案內容、需求、素材狀況"
+              class="mt-2 w-full border-b border-paper/30 bg-transparent pb-2 text-base text-paper placeholder-paper/30 outline-none focus:border-paper resize-none md:mt-3"
+            ></textarea>
+          </label>
+
+          <input
+            type="text"
+            name="website"
+            tabindex="-1"
+            autocomplete="off"
+            class="absolute -left-[9999px]"
+            aria-hidden="true"
+          />
+
+          <button
+            type="submit"
+            class="group inline-flex items-center gap-3 border border-paper rounded-full px-8 py-3 text-sm zh transition-colors hover:bg-paper hover:text-ink disabled:opacity-50"
+          >
+            <span data-label-idle>送出諮詢</span>
+            <span data-label-sending class="hidden">傳送中...</span>
+            <span class="transition-transform group-hover:translate-x-1">→</span>
+          </button>
+
+          <p id="form-status" class="hidden text-sm" aria-live="polite"></p>
+        </form>
+
+        <aside class="md:col-span-4 md:col-start-9 reveal reveal-delay-1">
+          <div class="space-y-7 text-paper md:space-y-9">
+            <div>
+              <p class="eyebrow text-paper/60">
+                <span class="accent-serif normal-case text-xs not-italic text-paper">01</span> Email
+              </p>
+              <a
+                href={`mailto:${site.email}`}
+                class="mt-2 inline-block accent-serif text-xl link-grow md:text-2xl"
+              >
+                {site.email}
+              </a>
+            </div>
+            {
+              site.instagram && (
+                <div>
+                  <p class="eyebrow text-paper/60">
+                    <span class="accent-serif normal-case text-xs not-italic text-paper">02</span> Instagram
+                  </p>
+                  <p class="mt-2 accent-serif text-xl md:text-2xl">
+                    {site.instagram}
+                  </p>
+                </div>
+              )
+            }
+            {
+              site.location && (
+                <div>
+                  <p class="eyebrow text-paper/60">
+                    <span class="accent-serif normal-case text-xs not-italic text-paper">03</span> Based in
+                  </p>
+                  <p class="mt-2 zh text-base md:text-lg">{site.location}</p>
+                </div>
+              )
+            }
+
+            <div class="border-t border-paper/20 pt-6">
+              <p class="text-xs leading-relaxed text-paper/60 zh md:text-sm">
+                一般工作天 48 小時內回覆。<br />
+                週末與國定假日可能延遲。
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="hairline mt-16 bg-paper/15 md:mt-20"></div>
+      <div class="mt-5 flex flex-col items-start justify-between gap-2 text-xs text-paper/50 md:flex-row md:items-center">
+        <p>© {year} {site.siteName}. All rights reserved.</p>
+        <p class="accent-serif">— Crafted with care</p>
+      </div>
+    </div>
+  </section>
+
+  <WorkModal works={works} />
+</BaseLayout>
+
+<style>
+  .filter-btn.is-active {
+    color: var(--color-ink);
+    position: relative;
+  }
+  .filter-btn.is-active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1.5px;
+    background: var(--color-accent);
+  }
+</style>
+
+<script>
+  // Filter
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".filter-btn");
+  const items = document.querySelectorAll<HTMLElement>(".work-item");
+  const emptyState = document.getElementById("empty-state");
+  const grid = document.getElementById("works-grid");
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const filter = btn.dataset.filter;
+      buttons.forEach((b) => b.classList.toggle("is-active", b === btn));
+
+      let visibleCount = 0;
+      items.forEach((item) => {
+        const matches = filter === "all" || item.dataset.category === filter;
+        item.style.display = matches ? "" : "none";
+        if (matches) visibleCount++;
+      });
+
+      if (emptyState && grid) {
+        emptyState.classList.toggle("hidden", visibleCount > 0);
+        grid.classList.toggle("hidden", visibleCount === 0);
+      }
+    });
+  });
+
+  // Contact form
+  const form = document.getElementById("contact-form") as HTMLFormElement;
+  if (form) {
+    const status = document.getElementById("form-status") as HTMLElement;
+    const idleLabels = form.querySelectorAll<HTMLElement>("[data-label-idle]");
+    const sendingLabels = form.querySelectorAll<HTMLElement>("[data-label-sending]");
+    const submitBtn = form.querySelector<HTMLButtonElement>("button[type=submit]");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!submitBtn) return;
+      submitBtn.disabled = true;
+      idleLabels.forEach((el) => el.classList.add("hidden"));
+      sendingLabels.forEach((el) => el.classList.remove("hidden"));
+      status.classList.add("hidden");
+
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        status.textContent = "已送出！我會在 48 小時內透過 email 回覆。";
+        status.className = "text-sm text-accent-soft";
+        status.classList.remove("hidden");
+        form.reset();
+      } catch (err) {
+        status.textContent = "傳送失敗，請稍後再試或直接寄信至上方 email。";
+        status.className = "text-sm text-red-400";
+        status.classList.remove("hidden");
+      } finally {
+        submitBtn.disabled = false;
+        idleLabels.forEach((el) => el.classList.remove("hidden"));
+        sendingLabels.forEach((el) => el.classList.add("hidden"));
+      }
+    });
+  }
+</script>

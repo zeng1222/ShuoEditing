@@ -1,0 +1,85 @@
+---
+import type { Work } from "../lib/types";
+
+interface Props {
+  work: Work;
+  index?: number;
+}
+
+const { work, index } = Astro.props;
+
+const cover =
+  work.coverImage ||
+  `https://i.ytimg.com/vi/${work.youtubeId}/hqdefault.jpg`;
+
+const indexLabel =
+  index !== undefined ? String(index + 1).padStart(2, "0") : null;
+---
+
+<button
+  type="button"
+  class="group work-trigger relative block w-full cursor-pointer text-left"
+  data-work-slug={work.slug}
+  data-category={work.category?.slug}
+>
+  <div class="relative aspect-[9/16] overflow-hidden rounded-sm bg-ink/95">
+    <img
+      src={cover}
+      alt={work.title}
+      loading="lazy"
+      class="absolute inset-0 h-full w-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-[1.05]"
+    />
+
+    {/* Top — index + category */}
+    <div
+      class="absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/45 to-transparent p-2.5 text-paper md:p-3.5"
+    >
+      {
+        indexLabel ? (
+          <span class="accent-serif text-xs md:text-sm">{indexLabel}</span>
+        ) : <span />
+      }
+      <span class="text-[10px] uppercase tracking-[0.14em] text-paper/80 md:text-[11px]">
+        {work.category?.name}
+      </span>
+    </div>
+
+    {/* Hover play icon */}
+    <div
+      class="absolute inset-0 z-10 flex items-center justify-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+    >
+      <div
+        class="flex h-12 w-12 items-center justify-center rounded-full bg-paper/95 shadow-xl backdrop-blur md:h-14 md:w-14"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 20 20"
+          fill="none"
+          aria-hidden="true"
+          class="md:scale-110"
+        >
+          <path d="M5 3 L17 10 L5 17 Z" fill="#141210" />
+        </svg>
+      </div>
+    </div>
+
+    {/* Bottom — title + meta */}
+    <div
+      class="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/85 via-black/35 to-transparent p-2.5 pb-3 md:p-3.5 md:pb-4"
+    >
+      <h3 class="zh text-[13px] font-medium leading-snug text-paper md:text-sm">
+        {work.title}
+      </h3>
+      <p class="mt-1 flex items-center gap-1.5 text-[10px] text-paper/70 md:text-[11px]">
+        <span class="accent-serif">{work.year}</span>
+        {work.client && (
+          <>
+            <span class="opacity-50">·</span>
+            <span class="truncate">{work.client}</span>
+          </>
+        )}
+      </p>
+    </div>
+  </div>
+</button>

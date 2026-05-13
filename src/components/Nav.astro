@@ -1,0 +1,159 @@
+---
+const links = [
+  { href: "#works", label: "作品", num: "01" },
+  { href: "#about", label: "關於", num: "02" },
+  { href: "#services", label: "服務", num: "03" },
+  { href: "#contact", label: "聯絡", num: "04" },
+];
+---
+
+<header
+  id="site-nav"
+  class="fixed top-0 left-0 right-0 z-40 transition-all duration-500"
+>
+  <div
+    id="nav-inner"
+    class="container-wide flex items-center justify-between py-4 transition-all duration-500 md:py-5"
+  >
+    <a
+      href="#top"
+      class="group flex items-baseline gap-1.5"
+      aria-label="回到頂部"
+    >
+      <span class="accent-serif text-2xl md:text-[28px] leading-none">Editor</span>
+      <span class="hidden text-xs text-ink-faint sm:inline accent-serif"
+        >· Portfolio</span
+      >
+    </a>
+
+    <nav aria-label="主選單" class="hidden md:block">
+      <ul class="flex items-center gap-9">
+        {
+          links.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="group flex items-baseline gap-1.5 text-sm text-ink-soft transition-colors hover:text-accent"
+              >
+                <span class="accent-serif text-[11px] text-ink-faint">
+                  {link.num}
+                </span>
+                <span
+                  class="zh link-grow"
+                  style={`letter-spacing: var(--tracking-zh)`}
+                >
+                  {link.label}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a
+      href="#contact"
+      class="hidden md:inline-flex items-center gap-2 border border-ink/70 rounded-full px-4 py-1.5 text-xs zh transition-all hover:bg-ink hover:text-paper"
+    >
+      <span class="h-1.5 w-1.5 rounded-full bg-accent"></span>
+      接案中
+    </a>
+
+    {/* Mobile menu button */}
+    <button
+      type="button"
+      id="mobile-menu-btn"
+      aria-label="選單"
+      class="md:hidden flex flex-col gap-1.5 p-2 -mr-2"
+    >
+      <span class="block h-px w-5 bg-ink"></span>
+      <span class="block h-px w-5 bg-ink"></span>
+    </button>
+  </div>
+</header>
+
+{/* Mobile menu */}
+<div
+  id="mobile-menu"
+  class="fixed inset-0 z-50 bg-paper opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
+>
+  <div class="container-page flex h-full flex-col">
+    <div class="flex items-center justify-between py-4">
+      <span class="accent-serif text-2xl">Editor</span>
+      <button
+        type="button"
+        id="mobile-close-btn"
+        aria-label="關閉"
+        class="p-2 -mr-2 text-2xl"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+      </button>
+    </div>
+    <nav class="flex-1 flex flex-col justify-center -mt-16">
+      <ul class="space-y-7">
+        {
+          links.map((link) => (
+            <li class="flex items-baseline gap-4">
+              <span class="accent-serif text-base text-ink-faint">
+                {link.num}
+              </span>
+              <a
+                href={link.href}
+                data-mobile-link
+                class="zh text-3xl"
+                style={`letter-spacing: var(--tracking-zh)`}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-16 inline-flex items-center gap-2 text-xs zh self-start">
+        <span class="h-1.5 w-1.5 rounded-full bg-accent"></span>
+        接案中 · 48 小時內回覆
+      </div>
+    </nav>
+  </div>
+</div>
+
+<script>
+  const nav = document.getElementById("site-nav");
+  const inner = document.getElementById("nav-inner");
+  const mobileBtn = document.getElementById("mobile-menu-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
+  const mobileClose = document.getElementById("mobile-close-btn");
+
+  window.addEventListener("scroll", () => {
+    const scrolled = window.scrollY > 20;
+    if (nav && inner) {
+      if (scrolled) {
+        nav.classList.add("bg-paper/85", "backdrop-blur-md", "border-b", "border-line/60");
+        inner.classList.remove("py-5", "md:py-5");
+        inner.classList.add("py-3", "md:py-3");
+      } else {
+        nav.classList.remove("bg-paper/85", "backdrop-blur-md", "border-b", "border-line/60");
+        inner.classList.add("py-4", "md:py-5");
+        inner.classList.remove("py-3", "md:py-3");
+      }
+    }
+  });
+
+  function openMobile() {
+    if (!mobileMenu) return;
+    mobileMenu.classList.remove("opacity-0", "pointer-events-none");
+    document.body.style.overflow = "hidden";
+  }
+  function closeMobile() {
+    if (!mobileMenu) return;
+    mobileMenu.classList.add("opacity-0", "pointer-events-none");
+    document.body.style.overflow = "";
+  }
+  mobileBtn?.addEventListener("click", openMobile);
+  mobileClose?.addEventListener("click", closeMobile);
+  document.querySelectorAll("[data-mobile-link]").forEach((link) => {
+    link.addEventListener("click", closeMobile);
+  });
+</script>

@@ -1,0 +1,175 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title = "剪輯作品集",
+  description = "直式短影音剪輯 · 視覺敘事",
+  image,
+} = Astro.props;
+
+const siteName = "Editor Portfolio";
+const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
+const ogImage = image ?? "/og-default.jpg";
+
+// Preview mode detection
+const isPreview = Astro.url.searchParams.get("preview") === "true";
+---
+
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Instrument+Serif:ital@0;1&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@300;400;500;700&display=swap"
+    />
+
+    <link rel="preconnect" href="https://i.ytimg.com" />
+    <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+  </head>
+
+  <body class="min-h-screen bg-paper text-ink antialiased">
+    <slot />
+
+    {/* Preview banner — only shows in Visual Editing mode */}
+    {
+      isPreview && (
+        <div
+          id="preview-banner"
+          class="fixed bottom-4 left-4 z-[60] flex items-center gap-3 rounded-full bg-ink px-4 py-2 text-xs text-paper shadow-2xl"
+        >
+          <span class="h-2 w-2 animate-pulse rounded-full bg-accent" />
+          <span class="zh">編輯預覽模式</span>
+          <a
+            href="/"
+            class="ml-2 text-paper/70 underline-offset-2 hover:underline"
+          >
+            離開
+          </a>
+        </div>
+      )
+    }
+
+    <script>
+      // lite-youtube-embed — Paul Irish (MIT)
+      class LiteYTEmbed extends HTMLElement {
+        connectedCallback() {
+          this.videoId = this.getAttribute("videoid");
+          let playBtnEl = this.querySelector(".lty-playbtn");
+          this.playLabel =
+            (playBtnEl && playBtnEl.textContent.trim()) ||
+            this.getAttribute("playlabel") ||
+            "Play";
+
+          this.style.backgroundImage = `url("https://i.ytimg.com/vi/${this.videoId}/hqdefault.jpg")`;
+
+          if (!playBtnEl) {
+            playBtnEl = document.createElement("button");
+            playBtnEl.type = "button";
+            playBtnEl.classList.add("lty-playbtn");
+            this.append(playBtnEl);
+          }
+          if (!playBtnEl.textContent) {
+            const playBtnLabelEl = document.createElement("span");
+            playBtnLabelEl.className = "lyt-visually-hidden";
+            playBtnLabelEl.textContent = this.playLabel;
+            playBtnEl.append(playBtnLabelEl);
+          }
+          playBtnEl.removeAttribute("href");
+
+          this.addEventListener("pointerover", LiteYTEmbed.warmConnections, {
+            once: true,
+          });
+          this.addEventListener("click", this.addIframe);
+        }
+
+        static addPrefetch(kind, url) {
+          const linkEl = document.createElement("link");
+          linkEl.rel = kind;
+          linkEl.href = url;
+          document.head.append(linkEl);
+        }
+
+        static warmConnections() {
+          if (LiteYTEmbed.preconnected) return;
+          LiteYTEmbed.addPrefetch("preconnect", "https://www.youtube-nocookie.com");
+          LiteYTEmbed.addPrefetch("preconnect", "https://www.google.com");
+          LiteYTEmbed.preconnected = true;
+        }
+
+        addIframe() {
+          if (this.classList.contains("lyt-activated")) return;
+          const params = new URLSearchParams(this.getAttribute("params") || "");
+          params.append("autoplay", "1");
+          params.append("playsinline", "1");
+
+          const iframeEl = document.createElement("iframe");
+          iframeEl.width = "560";
+          iframeEl.height = "315";
+          iframeEl.title = this.playLabel;
+          iframeEl.allow =
+            "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture";
+          iframeEl.allowFullscreen = true;
+          iframeEl.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(
+            this.videoId
+          )}?${params.toString()}`;
+          iframeEl.style.width = "100%";
+          iframeEl.style.height = "100%";
+          iframeEl.style.position = "absolute";
+          iframeEl.style.top = "0";
+          iframeEl.style.left = "0";
+          iframeEl.style.border = "0";
+          this.append(iframeEl);
+          this.classList.add("lyt-activated");
+        }
+      }
+      if (!customElements.get("lite-youtube")) {
+        customElements.define("lite-youtube", LiteYTEmbed);
+      }
+
+      // Scroll reveal
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -10% 0px" },
+      );
+      document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    </script>
+
+    {
+      isPreview && (
+        <script>
+          import { enableVisualEditing } from "@sanity/visual-editing";
+          enableVisualEditing();
+        </script>
+      )
+    }
+  </body>
+</html>

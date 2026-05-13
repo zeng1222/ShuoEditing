@@ -1,0 +1,26 @@
+---
+interface Props {
+  videoId: string;
+  title?: string;
+  params?: string;
+  orientation?: "portrait" | "landscape";
+  class?: string;
+}
+
+const {
+  videoId,
+  title = "Play video",
+  params = "rel=0&modestbranding=1",
+  orientation = "portrait",
+  class: className = "",
+} = Astro.props;
+---
+
+<lite-youtube
+  videoid={videoId}
+  playlabel={title}
+  params={params}
+  orientation={orientation}
+  class:list={["block w-full overflow-hidden", className]}
+>
+</lite-youtube>

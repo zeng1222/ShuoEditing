@@ -1,0 +1,198 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import type { Work } from "../lib/types";
+
+interface Props {
+  works: Work[];
+}
+
+const { works } = Astro.props;
+
+const worksData = stegaClean(
+  works.map((w) => ({
+    slug: w.slug,
+    title: w.title,
+    client: w.client ?? "",
+    year: w.year,
+    categoryLabel: w.category?.name ?? "",
+    youtubeId: w.youtubeId,
+    excerpt: w.excerpt ?? "",
+    description: w.description ?? "",
+    role: w.role ?? "",
+    credits: w.credits ?? [],
+  })),
+);
+---
+
+<div
+  id="work-modal"
+  class="modal-backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="true"
+>
+  <button
+    type="button"
+    id="modal-close"
+    aria-label="關閉"
+    class="fixed top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-paper/10 text-paper transition-colors hover:bg-paper/20 md:top-6 md:right-6 md:h-12 md:w-12"
+  >
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="1.5" />
+    </svg>
+  </button>
+
+  <div class="modal-content min-h-full w-full py-12 px-5 md:py-16 md:px-10">
+    <div class="mx-auto grid max-w-6xl gap-8 md:gap-10 lg:grid-cols-[auto_1fr] lg:gap-14">
+      {/* Vertical video */}
+      <div class="mx-auto w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[380px]">
+        <div id="modal-video-mount"></div>
+      </div>
+
+      {/* Details */}
+      <div class="text-paper">
+        <p class="eyebrow text-paper/60">
+          <span id="modal-category"></span> &nbsp;·&nbsp;
+          <span id="modal-year" class="accent-serif text-sm not-italic text-paper"></span>
+        </p>
+        <h2
+          id="modal-title"
+          class="display-2 mt-3 zh text-paper"
+        >
+        </h2>
+        <p id="modal-client" class="mt-2 text-sm text-paper/70 zh md:text-base"></p>
+
+        <div class="hairline mt-6 bg-paper/20"></div>
+
+        <p id="modal-excerpt" class="mt-5 zh text-base text-paper/90 leading-relaxed md:text-lg"></p>
+        <div
+          id="modal-description"
+          class="mt-5 space-y-4 leading-loose text-paper/75 zh text-sm md:text-base"
+        >
+        </div>
+
+        <div
+          id="modal-credits-wrap"
+          class="mt-8 grid gap-6 sm:grid-cols-2 md:mt-10"
+        >
+          <div id="modal-role-wrap" class="hidden">
+            <p class="eyebrow text-paper/60">Role</p>
+            <p id="modal-role" class="mt-2 text-paper/90 zh text-sm md:text-base"></p>
+          </div>
+          <div id="modal-credits-list-wrap" class="hidden">
+            <p class="eyebrow text-paper/60">Credits</p>
+            <dl id="modal-credits-list" class="mt-2 space-y-1.5 text-sm"></dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script
+  type="application/json"
+  id="works-data"
+  set:html={JSON.stringify(worksData)}
+/>
+
+<script is:inline>
+  (function () {
+    const modal = document.getElementById("work-modal");
+    const closeBtn = document.getElementById("modal-close");
+    const dataEl = document.getElementById("works-data");
+    if (!modal || !dataEl) return;
+
+    const works = JSON.parse(dataEl.textContent || "[]");
+
+    function open(slug) {
+      const w = works.find((x) => x.slug === slug);
+      if (!w) return;
+
+      document.getElementById("modal-category").textContent = w.categoryLabel;
+      document.getElementById("modal-year").textContent = w.year;
+      document.getElementById("modal-title").textContent = w.title;
+      document.getElementById("modal-client").textContent = w.client || "";
+      document.getElementById("modal-excerpt").textContent = w.excerpt || "";
+
+      const descEl = document.getElementById("modal-description");
+      descEl.innerHTML = "";
+      (w.description || "")
+        .split("\n\n")
+        .filter(Boolean)
+        .forEach((p) => {
+          const para = document.createElement("p");
+          para.textContent = p;
+          descEl.appendChild(para);
+        });
+
+      const roleWrap = document.getElementById("modal-role-wrap");
+      if (w.role) {
+        document.getElementById("modal-role").textContent = w.role;
+        roleWrap.classList.remove("hidden");
+      } else {
+        roleWrap.classList.add("hidden");
+      }
+
+      const creditsWrap = document.getElementById("modal-credits-list-wrap");
+      const creditsList = document.getElementById("modal-credits-list");
+      if (w.credits && w.credits.length) {
+        creditsList.innerHTML = "";
+        w.credits.forEach((c) => {
+          const div = document.createElement("div");
+          div.className = "flex gap-3";
+          div.innerHTML = `<dt class="w-16 shrink-0 text-paper/50">${escape(c.label || "")}</dt><dd class="text-paper/90">${escape(c.name || "")}</dd>`;
+          creditsList.appendChild(div);
+        });
+        creditsWrap.classList.remove("hidden");
+      } else {
+        creditsWrap.classList.add("hidden");
+      }
+
+      const mount = document.getElementById("modal-video-mount");
+      mount.innerHTML = "";
+      const yt = document.createElement("lite-youtube");
+      yt.setAttribute("videoid", w.youtubeId);
+      yt.setAttribute("playlabel", w.title);
+      yt.setAttribute("params", "rel=0&modestbranding=1");
+      yt.className = "block w-full overflow-hidden rounded-sm";
+      mount.appendChild(yt);
+
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      modal.scrollTop = 0;
+      document.body.style.overflow = "hidden";
+    }
+
+    function close() {
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      setTimeout(() => {
+        const mount = document.getElementById("modal-video-mount");
+        if (mount) mount.innerHTML = "";
+      }, 300);
+    }
+
+    function escape(s) {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    document.querySelectorAll(".work-trigger").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const slug = btn.getAttribute("data-work-slug");
+        if (slug) open(slug);
+      });
+    });
+
+    closeBtn?.addEventListener("click", close);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) close();
+    });
+  })();
+</script>
