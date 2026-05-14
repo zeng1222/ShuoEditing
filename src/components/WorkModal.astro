@@ -156,6 +156,7 @@ const worksData = stegaClean(
       const wrap = document.getElementById("modal-video-wrap");
       const grid = document.getElementById("modal-grid");
       mount.innerHTML = "";
+
       const isHorizontal = w.format === "horizontal";
       if (isHorizontal) {
         wrap.className = "w-full";
@@ -167,13 +168,33 @@ const worksData = stegaClean(
         grid.className =
           "mx-auto grid max-w-6xl gap-8 md:gap-10 lg:grid-cols-[auto_1fr] lg:gap-14";
       }
-      const yt = document.createElement("lite-youtube");
-      yt.setAttribute("videoid", w.youtubeId);
-      yt.setAttribute("playlabel", w.title);
-      yt.setAttribute("params", "rel=0&modestbranding=1");
-      yt.setAttribute("orientation", isHorizontal ? "landscape" : "portrait");
-      yt.className = "block w-full overflow-hidden rounded-sm";
-      mount.appendChild(yt);
+
+      // Plain YouTube iframe (more reliable inside modal than lite-youtube)
+      const aspectBox = document.createElement("div");
+      aspectBox.style.position = "relative";
+      aspectBox.style.width = "100%";
+      aspectBox.style.aspectRatio = isHorizontal ? "16 / 9" : "9 / 16";
+      aspectBox.style.background = "#000";
+      aspectBox.style.borderRadius = "2px";
+      aspectBox.style.overflow = "hidden";
+
+      const iframe = document.createElement("iframe");
+      iframe.src =
+        "https://www.youtube-nocookie.com/embed/" +
+        encodeURIComponent(w.youtubeId) +
+        "?rel=0&modestbranding=1&playsinline=1";
+      iframe.title = w.title;
+      iframe.setAttribute(
+        "allow",
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+      );
+      iframe.setAttribute("allowfullscreen", "");
+      iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+      iframe.style.cssText =
+        "position:absolute;top:0;left:0;width:100%;height:100%;border:0;display:block;";
+
+      aspectBox.appendChild(iframe);
+      mount.appendChild(aspectBox);
 
       modal.classList.add("is-open");
       modal.setAttribute("aria-hidden", "false");
