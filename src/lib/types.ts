@@ -4,6 +4,8 @@ export interface Category {
   slug: string;
 }
 
+export type WorkFormat = "vertical" | "horizontal";
+
 export interface Work {
   _id: string;
   slug: string;
@@ -11,6 +13,7 @@ export interface Work {
   client?: string;
   year: number;
   category: Category;
+  format: WorkFormat;
   youtubeId: string;
   coverImage?: string;
   excerpt?: string;
@@ -31,7 +34,10 @@ export interface Homepage {
 export interface About {
   headshot?: string;
   bio: string;
-  experience?: { year: string; description: string }[];
+  yearsExperience: number;
+  projectsCount: number;
+  editsCount: number;
+  servicesText: string;
   brands?: { name: string; logo?: string }[];
 }
 
@@ -54,7 +60,11 @@ export interface FAQ {
 export interface SiteSettings {
   siteName: string;
   email: string;
+  lineId?: string;
   location?: string;
   instagram?: string;
   vimeo?: string;
+  contactTitle?: string;
+  contactIntro?: string;
+  contactResponseTime?: string;
 }

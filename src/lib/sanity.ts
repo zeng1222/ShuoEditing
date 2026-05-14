@@ -79,7 +79,7 @@ export async function getAbout(preview = false): Promise<About> {
     `*[_type == "about"][0]{
       "headshot": headshot.asset->url,
       bio,
-      experience,
+      yearsExperience, projectsCount, editsCount, servicesText,
       brands[]{name, "logo": logo.asset->url}
     }`,
   );
@@ -90,7 +90,10 @@ export async function getSiteSettings(preview = false): Promise<SiteSettings> {
   const c = getClient(preview);
   if (!c) return sampleSite;
   const data = await c.fetch<SiteSettings | null>(
-    `*[_type == "siteSettings"][0]{siteName, email, location, instagram, vimeo}`,
+    `*[_type == "siteSettings"][0]{
+      siteName, email, lineId, location, instagram, vimeo,
+      contactTitle, contactIntro, contactResponseTime
+    }`,
   );
   return data ?? sampleSite;
 }
@@ -134,6 +137,7 @@ export async function getAllWorks(preview = false): Promise<Work[]> {
       _id,
       "slug": slug.current,
       title, client, year, youtubeId,
+      "format": coalesce(format, "vertical"),
       "category": category->{ _id, name, "slug": slug.current },
       "coverImage": coverImage.asset->url,
       excerpt, description, role, credits,

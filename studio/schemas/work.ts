@@ -66,6 +66,23 @@ export const work = defineType({
     }),
 
     defineField({
+      name: "format",
+      title: "影片格式",
+      type: "string",
+      fieldset: "video",
+      options: {
+        list: [
+          { title: "直式 9:16（短影音）", value: "vertical" },
+          { title: "橫式 16:9（長影音）", value: "horizontal" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "vertical",
+      description:
+        "選直式：作品會出現在「作品集」短影音牆\n選橫式：作品會出現在「長影音」區",
+      validation: (R) => R.required(),
+    }),
+    defineField({
       name: "youtubeId",
       title: "YouTube 影片 ID",
       type: "string",

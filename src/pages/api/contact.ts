@@ -3,11 +3,10 @@ import type { APIRoute } from "astro";
 export const prerender = false;
 
 interface ContactPayload {
-  name?: string;
+  lineId?: string;
+  lineName?: string;
+  realName?: string;
   email?: string;
-  projectType?: string;
-  budget?: string;
-  timeline?: string;
   message?: string;
   website?: string; // honeypot
 }
@@ -20,81 +19,63 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response("Invalid payload", { status: 400 });
   }
 
-  // Honeypot — bots fill hidden fields
   if (body.website) {
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    // honeypot — bot detected, silently OK
+    return json({ ok: true });
   }
 
-  if (!body.name || !body.email || !body.message) {
+  if (!body.lineId || !body.lineName || !body.realName || !body.email) {
     return new Response("Missing required fields", { status: 400 });
   }
 
-  const RESEND_API_KEY = import.meta.env.RESEND_API_KEY;
-  const TO_EMAIL = import.meta.env.CONTACT_TO_EMAIL;
-  const FROM_EMAIL = import.meta.env.CONTACT_FROM_EMAIL;
+  const LINE_CHANNEL_ACCESS_TOKEN = import.meta.env.LINE_CHANNEL_ACCESS_TOKEN;
+  const LINE_TO_USER_ID = import.meta.env.LINE_TO_USER_ID;
 
-  if (!RESEND_API_KEY || !TO_EMAIL || !FROM_EMAIL) {
-    console.log("[contact form] Submission (Resend not configured):", body);
-    return new Response(
-      JSON.stringify({
-        ok: true,
-        note: "Logged to console — set RESEND_API_KEY to enable email delivery.",
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
+  // No LINE configured — log to console (dev fallback)
+  if (!LINE_CHANNEL_ACCESS_TOKEN || !LINE_TO_USER_ID) {
+    console.log("[contact form] Submission (LINE not configured):", body);
+    return json({
+      ok: true,
+      note: "Logged to console — set LINE_CHANNEL_ACCESS_TOKEN + LINE_TO_USER_ID to enable LINE notifications.",
+    });
   }
 
-  const subject = `[作品集詢問] ${body.projectType || "未分類"} — ${body.name}`;
-  const html = `
-    <div style="font-family: -apple-system, sans-serif; line-height: 1.6; color: #1A1815;">
-      <h2 style="font-family: Georgia, serif; font-weight: 400;">新的合作諮詢</h2>
-      <table style="border-collapse: collapse; margin-top: 16px;">
-        <tr><td style="padding: 8px 16px 8px 0; color: #6B655B;">姓名</td><td>${escapeHtml(body.name)}</td></tr>
-        <tr><td style="padding: 8px 16px 8px 0; color: #6B655B;">Email</td><td><a href="mailto:${escapeHtml(body.email)}">${escapeHtml(body.email)}</a></td></tr>
-        <tr><td style="padding: 8px 16px 8px 0; color: #6B655B;">專案類型</td><td>${escapeHtml(body.projectType || "—")}</td></tr>
-        <tr><td style="padding: 8px 16px 8px 0; color: #6B655B;">預算</td><td>${escapeHtml(body.budget || "—")}</td></tr>
-        <tr><td style="padding: 8px 16px 8px 0; color: #6B655B;">時程</td><td>${escapeHtml(body.timeline || "—")}</td></tr>
-      </table>
-      <h3 style="margin-top: 24px; font-family: Georgia, serif; font-weight: 400;">需求描述</h3>
-      <p style="white-space: pre-wrap;">${escapeHtml(body.message)}</p>
-    </div>
-  `;
+  const lines = [
+    "📩 新的合作諮詢",
+    "—",
+    `姓名：${body.realName}`,
+    `LINE 名稱：${body.lineName}`,
+    `LINE ID：${body.lineId}`,
+    `Email：${body.email}`,
+  ];
+  if (body.message) {
+    lines.push("", `訊息：${body.message}`);
+  }
 
-  const res = await fetch("https://api.resend.com/emails", {
+  const res = await fetch("https://api.line.me/v2/bot/message/push", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
+      Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: TO_EMAIL,
-      reply_to: body.email,
-      subject,
-      html,
+      to: LINE_TO_USER_ID,
+      messages: [{ type: "text", text: lines.join("\n") }],
     }),
   });
 
   if (!res.ok) {
     const text = await res.text();
-    console.error("[contact form] Resend error:", text);
-    return new Response("Email send failed", { status: 500 });
+    console.error("[contact form] LINE push error:", text);
+    return new Response("Push failed", { status: 500 });
   }
 
-  return new Response(JSON.stringify({ ok: true }), {
+  return json({ ok: true });
+};
+
+function json(data: unknown): Response {
+  return new Response(JSON.stringify(data), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
-};
-
-function escapeHtml(input: string): string {
-  return input
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }

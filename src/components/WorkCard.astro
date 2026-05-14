@@ -8,9 +8,13 @@ interface Props {
 
 const { work, index } = Astro.props;
 
+const isHorizontal = work.format === "horizontal";
+
 const cover =
   work.coverImage ||
-  `https://i.ytimg.com/vi/${work.youtubeId}/hqdefault.jpg`;
+  (isHorizontal
+    ? `https://i.ytimg.com/vi/${work.youtubeId}/maxresdefault.jpg`
+    : `https://i.ytimg.com/vi/${work.youtubeId}/hqdefault.jpg`);
 
 const indexLabel =
   index !== undefined ? String(index + 1).padStart(2, "0") : null;
@@ -21,8 +25,14 @@ const indexLabel =
   class="group work-trigger relative block w-full cursor-pointer text-left"
   data-work-slug={work.slug}
   data-category={work.category?.slug}
+  data-format={work.format}
 >
-  <div class="relative aspect-[9/16] overflow-hidden rounded-sm bg-ink/95">
+  <div
+    class:list={[
+      "relative overflow-hidden rounded-sm bg-ink/95",
+      isHorizontal ? "aspect-video" : "aspect-[9/16]",
+    ]}
+  >
     <img
       src={cover}
       alt={work.title}
@@ -30,48 +40,50 @@ const indexLabel =
       class="absolute inset-0 h-full w-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-[1.05]"
     />
 
-    {/* Top — index + category */}
     <div
       class="absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/45 to-transparent p-2.5 text-paper md:p-3.5"
     >
       {
         indexLabel ? (
           <span class="accent-serif text-xs md:text-sm">{indexLabel}</span>
-        ) : <span />
+        ) : (
+          <span />
+        )
       }
       <span class="text-[10px] uppercase tracking-[0.14em] text-paper/80 md:text-[11px]">
         {work.category?.name}
       </span>
     </div>
 
-    {/* Hover play icon */}
     <div
       class="absolute inset-0 z-10 flex items-center justify-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
     >
       <div
         class="flex h-12 w-12 items-center justify-center rounded-full bg-paper/95 shadow-xl backdrop-blur md:h-14 md:w-14"
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 20 20"
-          fill="none"
-          aria-hidden="true"
-          class="md:scale-110"
-        >
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
           <path d="M5 3 L17 10 L5 17 Z" fill="#141210" />
         </svg>
       </div>
     </div>
 
-    {/* Bottom — title + meta */}
     <div
       class="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/85 via-black/35 to-transparent p-2.5 pb-3 md:p-3.5 md:pb-4"
     >
-      <h3 class="zh text-[13px] font-medium leading-snug text-paper md:text-sm">
+      <h3
+        class:list={[
+          "zh font-medium leading-snug text-paper",
+          isHorizontal ? "text-base md:text-lg" : "text-[13px] md:text-sm",
+        ]}
+      >
         {work.title}
       </h3>
-      <p class="mt-1 flex items-center gap-1.5 text-[10px] text-paper/70 md:text-[11px]">
+      <p
+        class:list={[
+          "mt-1 flex items-center gap-1.5 text-paper/70",
+          isHorizontal ? "text-xs md:text-sm" : "text-[10px] md:text-[11px]",
+        ]}
+      >
         <span class="accent-serif">{work.year}</span>
         {work.client && (
           <>

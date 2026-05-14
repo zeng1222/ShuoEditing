@@ -15,6 +15,7 @@ const worksData = stegaClean(
     client: w.client ?? "",
     year: w.year,
     categoryLabel: w.category?.name ?? "",
+    format: w.format ?? "vertical",
     youtubeId: w.youtubeId,
     excerpt: w.excerpt ?? "",
     description: w.description ?? "",
@@ -43,9 +44,12 @@ const worksData = stegaClean(
   </button>
 
   <div class="modal-content min-h-full w-full py-12 px-5 md:py-16 md:px-10">
-    <div class="mx-auto grid max-w-6xl gap-8 md:gap-10 lg:grid-cols-[auto_1fr] lg:gap-14">
-      {/* Vertical video */}
-      <div class="mx-auto w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[380px]">
+    <div
+      id="modal-grid"
+      class="mx-auto grid max-w-6xl gap-8 md:gap-10 lg:grid-cols-[auto_1fr] lg:gap-14"
+    >
+      {/* Video container — sizing switches via JS based on format */}
+      <div id="modal-video-wrap" class="mx-auto w-full">
         <div id="modal-video-mount"></div>
       </div>
 
@@ -149,11 +153,25 @@ const worksData = stegaClean(
       }
 
       const mount = document.getElementById("modal-video-mount");
+      const wrap = document.getElementById("modal-video-wrap");
+      const grid = document.getElementById("modal-grid");
       mount.innerHTML = "";
+      const isHorizontal = w.format === "horizontal";
+      if (isHorizontal) {
+        wrap.className = "w-full";
+        grid.className =
+          "mx-auto grid max-w-5xl gap-8 md:gap-10";
+      } else {
+        wrap.className =
+          "mx-auto w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[380px]";
+        grid.className =
+          "mx-auto grid max-w-6xl gap-8 md:gap-10 lg:grid-cols-[auto_1fr] lg:gap-14";
+      }
       const yt = document.createElement("lite-youtube");
       yt.setAttribute("videoid", w.youtubeId);
       yt.setAttribute("playlabel", w.title);
       yt.setAttribute("params", "rel=0&modestbranding=1");
+      yt.setAttribute("orientation", isHorizontal ? "landscape" : "portrait");
       yt.className = "block w-full overflow-hidden rounded-sm";
       mount.appendChild(yt);
 
