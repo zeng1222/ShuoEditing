@@ -163,10 +163,11 @@ const worksData = stegaClean(
         grid.className =
           "mx-auto grid max-w-5xl gap-8 md:gap-10";
       } else {
+        // Fixed widths avoid the CSS-grid `auto` + `w-full` zero-width bug
         wrap.className =
-          "mx-auto w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[380px]";
+          "mx-auto w-full max-w-[320px] sm:max-w-[360px] lg:w-[380px] lg:max-w-none";
         grid.className =
-          "mx-auto grid max-w-6xl gap-8 md:gap-10 lg:grid-cols-[auto_1fr] lg:gap-14";
+          "mx-auto grid max-w-6xl gap-8 md:gap-10 lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-14";
       }
 
       // Plain YouTube iframe (more reliable inside modal than lite-youtube)
