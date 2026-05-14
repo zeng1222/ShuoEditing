@@ -34,7 +34,11 @@ export const sampleAbout: About = {
   yearsExperience: 3,
   projectsCount: 100,
   editsCount: 1000,
-  servicesText: "YT 長影音 · IG / TikTok 短影音（純剪輯）",
+  services: [
+    { platform: "YouTube", format: "長影音" },
+    { platform: "Instagram", format: "短影音" },
+    { platform: "TikTok", format: "短影音" },
+  ],
   brands: [],
 };
 

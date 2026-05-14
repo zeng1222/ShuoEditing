@@ -200,29 +200,41 @@ const formatPrice = (n: number) =>
   }
 
   {/* ============ ABOUT — animated stats ============ */}
-  <section id="about" class="relative py-20 md:py-28 scroll-mt-16">
+  <section id="about" class="relative py-16 md:py-24 scroll-mt-16">
     <div class="container-wide">
-      <div class="grid gap-12 md:grid-cols-12 md:gap-8 lg:gap-12">
-        <div class="md:col-span-5 reveal">
-          <p class="eyebrow">
-            <span class="accent-serif normal-case text-sm text-ink not-italic">03</span>
-            &nbsp;—&nbsp;About
-          </p>
-          <h2 class="display-2 mt-4 zh">關於我</h2>
-          {about.headshot ? (
-            <img
-              src={about.headshot}
-              alt="個人照"
-              class="mt-8 w-full max-w-xs grayscale"
-            />
-          ) : (
-            <div class="mt-8 flex aspect-[3/4] w-full max-w-xs items-center justify-center bg-paper-soft text-sm text-ink-muted zh">
-              個人照位置（在 Studio 上傳）
-            </div>
-          )}
-        </div>
+      {/* Header */}
+      <div class="mb-10 md:mb-14 reveal">
+        <p class="eyebrow">
+          <span class="accent-serif normal-case text-sm text-ink not-italic">03</span>
+          &nbsp;—&nbsp;About
+        </p>
+        <h2 class="display-2 mt-4 zh">關於我</h2>
+      </div>
 
-        <div class="md:col-span-7 lg:col-span-6 lg:col-start-7 reveal reveal-delay-1">
+      {/* Photo + Bio — only renders photo column if headshot uploaded */}
+      <div
+        class:list={[
+          "grid gap-8 md:gap-12 reveal",
+          about.headshot ? "md:grid-cols-12" : "",
+        ]}
+      >
+        {
+          about.headshot && (
+            <div class="md:col-span-4 lg:col-span-3">
+              <img
+                src={about.headshot}
+                alt="個人照"
+                class="w-full max-w-xs grayscale rounded-sm"
+              />
+            </div>
+          )
+        }
+        <div
+          class:list={[
+            "max-w-2xl",
+            about.headshot ? "md:col-span-8 lg:col-span-9" : "",
+          ]}
+        >
           <div class="space-y-5 zh text-base leading-loose md:text-[17px]">
             {about.bio.split("\n\n").map((p) => <p>{p}</p>)}
           </div>
@@ -232,7 +244,7 @@ const formatPrice = (n: number) =>
       {/* ===== Animated stats ===== */}
       <div
         id="stats-wrap"
-        class="mt-16 grid grid-cols-2 gap-y-12 border-y border-line py-12 md:mt-24 md:grid-cols-4 md:gap-y-0 md:py-16 reveal"
+        class="mt-12 grid grid-cols-2 gap-y-10 border-y border-line py-10 md:mt-16 md:grid-cols-4 md:gap-y-0 md:py-12 reveal"
       >
         <div class="text-center md:text-left">
           <p class="accent-serif text-xs uppercase tracking-[0.14em] not-italic text-ink-muted">
@@ -240,7 +252,7 @@ const formatPrice = (n: number) =>
           </p>
           <p class="mt-3 flex items-baseline justify-center gap-1 md:justify-start">
             <span
-              class="stat-number accent-serif text-5xl text-ink md:text-6xl lg:text-7xl"
+              class="stat-number accent-serif text-5xl text-ink md:text-6xl lg:text-[64px]"
               data-target={about.yearsExperience}
             >0</span>
             <span class="accent-serif text-2xl text-accent md:text-3xl">+</span>
@@ -255,7 +267,7 @@ const formatPrice = (n: number) =>
           </p>
           <p class="mt-3 flex items-baseline justify-center gap-1 md:justify-start">
             <span
-              class="stat-number accent-serif text-5xl text-ink md:text-6xl lg:text-7xl"
+              class="stat-number accent-serif text-5xl text-ink md:text-6xl lg:text-[64px]"
               data-target={about.projectsCount}
             >0</span>
             <span class="accent-serif text-2xl text-accent md:text-3xl">+</span>
@@ -270,7 +282,7 @@ const formatPrice = (n: number) =>
           </p>
           <p class="mt-3 flex items-baseline justify-center gap-1 md:justify-start">
             <span
-              class="stat-number accent-serif text-5xl text-ink md:text-6xl lg:text-7xl"
+              class="stat-number accent-serif text-5xl text-ink md:text-6xl lg:text-[64px]"
               data-target={about.editsCount}
             >0</span>
             <span class="accent-serif text-2xl text-accent md:text-3xl">+</span>
@@ -279,15 +291,24 @@ const formatPrice = (n: number) =>
           <p class="mt-2 text-xs text-ink-muted zh md:text-sm">剪輯數</p>
         </div>
 
-        <div class="text-center md:text-left md:border-l md:border-line md:pl-6 lg:pl-10">
+        <div class="col-span-2 md:col-span-1 md:text-left md:border-l md:border-line md:pl-6 lg:pl-10">
           <p class="accent-serif text-xs uppercase tracking-[0.14em] not-italic text-ink-muted">
             04 / 服務
           </p>
-          <p
-            class="mt-3 zh text-base font-medium leading-snug text-ink md:text-lg lg:text-xl"
-          >
-            {about.servicesText}
-          </p>
+          <ul class="mt-3 space-y-1.5">
+            {
+              about.services?.map((s) => (
+                <li class="flex items-baseline justify-between gap-3 border-b border-line/50 pb-1.5 last:border-b-0">
+                  <span class="zh text-sm font-medium md:text-[15px]">
+                    {s.platform}
+                  </span>
+                  <span class="zh text-xs text-ink-muted md:text-sm">
+                    {s.format}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
         </div>
       </div>
 

@@ -37,7 +37,7 @@ export interface About {
   yearsExperience: number;
   projectsCount: number;
   editsCount: number;
-  servicesText: string;
+  services: { platform: string; format: string }[];
   brands?: { name: string; logo?: string }[];
 }
 

@@ -45,11 +45,34 @@ export const about = defineType({
       validation: (R) => R.required().positive(),
     }),
     defineField({
-      name: "servicesText",
-      title: "服務內容描述",
-      type: "string",
-      description: "例如：YT 長影音 · IG / TikTok 短影音（純剪輯）",
-      validation: (R) => R.required(),
+      name: "services",
+      title: "服務內容",
+      type: "array",
+      description: "每行一個平台 + 格式",
+      of: [
+        {
+          type: "object",
+          fields: [
+            {
+              name: "platform",
+              title: "平台",
+              type: "string",
+              validation: (R) => R.required(),
+            },
+            {
+              name: "format",
+              title: "格式",
+              type: "string",
+              description: "例如：長影音、短影音",
+              validation: (R) => R.required(),
+            },
+          ],
+          preview: {
+            select: { title: "platform", subtitle: "format" },
+          },
+        },
+      ],
+      validation: (R) => R.required().min(1),
     }),
 
     defineField({

@@ -79,7 +79,8 @@ export async function getAbout(preview = false): Promise<About> {
     `*[_type == "about"][0]{
       "headshot": headshot.asset->url,
       bio,
-      yearsExperience, projectsCount, editsCount, servicesText,
+      yearsExperience, projectsCount, editsCount,
+      services[]{platform, format},
       brands[]{name, "logo": logo.asset->url}
     }`,
   );
