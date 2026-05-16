@@ -48,14 +48,6 @@ export const work = defineType({
       fieldset: "basic",
     }),
     defineField({
-      name: "year",
-      title: "年份",
-      type: "number",
-      fieldset: "basic",
-      initialValue: () => new Date().getFullYear(),
-      validation: (R) => R.required().min(2000).max(2100),
-    }),
-    defineField({
       name: "category",
       title: "類型",
       type: "reference",
@@ -171,14 +163,13 @@ export const work = defineType({
     select: {
       title: "title",
       client: "client",
-      year: "year",
       categoryName: "category.name",
       media: "coverImage",
     },
-    prepare({ title, client, year, categoryName, media }) {
+    prepare({ title, client, categoryName, media }) {
       return {
         title,
-        subtitle: [year, categoryName, client].filter(Boolean).join(" · "),
+        subtitle: [categoryName, client].filter(Boolean).join(" · "),
         media,
       };
     },

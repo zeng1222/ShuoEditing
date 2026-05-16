@@ -11,7 +11,6 @@ export interface Work {
   slug: string;
   title: string;
   client?: string;
-  year: number;
   category: Category;
   format: WorkFormat;
   youtubeId: string;

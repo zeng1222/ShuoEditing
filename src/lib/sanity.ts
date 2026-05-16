@@ -137,7 +137,7 @@ export async function getAllWorks(preview = false): Promise<Work[]> {
     `*[_type == "work"] | order(orderRank){
       _id,
       "slug": slug.current,
-      title, client, year, youtubeId,
+      title, client, youtubeId,
       "format": coalesce(format, "vertical"),
       "category": category->{ _id, name, "slug": slug.current },
       "coverImage": coverImage.asset->url,

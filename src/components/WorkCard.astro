@@ -78,20 +78,16 @@ const indexLabel =
       >
         {work.title}
       </h3>
-      <p
-        class:list={[
-          "mt-1 flex items-center gap-1.5 text-paper/70",
-          isHorizontal ? "text-xs md:text-sm" : "text-[10px] md:text-[11px]",
-        ]}
-      >
-        <span class="accent-serif">{work.year}</span>
-        {work.client && (
-          <>
-            <span class="opacity-50">·</span>
-            <span class="truncate">{work.client}</span>
-          </>
-        )}
-      </p>
+      {work.client && (
+        <p
+          class:list={[
+            "mt-1 truncate text-paper/70",
+            isHorizontal ? "text-xs md:text-sm" : "text-[10px] md:text-[11px]",
+          ]}
+        >
+          {work.client}
+        </p>
+      )}
     </div>
   </div>
 </button>

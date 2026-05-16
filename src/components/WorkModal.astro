@@ -13,7 +13,6 @@ const worksData = stegaClean(
     slug: w.slug,
     title: w.title,
     client: w.client ?? "",
-    year: w.year,
     categoryLabel: w.category?.name ?? "",
     format: w.format ?? "vertical",
     youtubeId: w.youtubeId,
@@ -56,8 +55,7 @@ const worksData = stegaClean(
       {/* Details */}
       <div class="text-paper">
         <p class="eyebrow text-paper/60">
-          <span id="modal-category"></span> &nbsp;·&nbsp;
-          <span id="modal-year" class="accent-serif text-sm not-italic text-paper"></span>
+          <span id="modal-category"></span>
         </p>
         <h2
           id="modal-title"
@@ -113,7 +111,6 @@ const worksData = stegaClean(
       if (!w) return;
 
       document.getElementById("modal-category").textContent = w.categoryLabel;
-      document.getElementById("modal-year").textContent = w.year;
       document.getElementById("modal-title").textContent = w.title;
       document.getElementById("modal-client").textContent = w.client || "";
       document.getElementById("modal-excerpt").textContent = w.excerpt || "";
